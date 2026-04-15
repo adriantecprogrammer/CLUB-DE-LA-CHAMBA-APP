@@ -8,6 +8,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
+    "format": "eslint . --fix",
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
@@ -15,6 +16,8 @@
     "@iconify-json/simple-icons": "^1.2.78",
     "@nuxt/image": "2.0.0",
     "@nuxt/ui": "^4.6.1",
+    "@tailwindcss/vite": "^4.2.2",
+    "axios": "^1.15.0",
     "nuxt": "^4.4.2",
     "tailwindcss": "^4.2.2"
   },

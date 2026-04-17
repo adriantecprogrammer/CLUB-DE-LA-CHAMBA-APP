@@ -87,7 +87,7 @@ const goBack = () => {
       </h2>
     </header>
 
-    <div class="aspect-2816/1536 w-full overflow-hidden">
+    <div class="aspect-2816/1536 max-h-[280px] w-full overflow-hidden sm:max-h-[360px]">
       <NuxtImg
         src="/images/cluboficios-hero.png"
         alt="ClubOficios"
@@ -96,9 +96,9 @@ const goBack = () => {
       />
     </div>
 
-    <main class="flex w-full flex-col px-6 pb-6">
-      <div class="flex w-full flex-col gap-2 pb-6 pt-6 text-center">
-        <h1 class="text-neutral-900 text-[28px] font-bold leading-[35px] tracking-[-0.7px]">
+    <main class="mx-auto flex w-full max-w-[480px] flex-col px-4 pb-6 sm:max-w-[560px] sm:px-6">
+      <div class="flex w-full flex-col gap-2 pb-5 pt-5 text-center sm:pb-6 sm:pt-6">
+        <h1 class="text-neutral-900 text-2xl font-bold leading-tight tracking-[-0.7px] sm:text-[28px] sm:leading-[35px]">
           Únete a ClubOficios
         </h1>
         <p class="text-neutral-500 text-sm font-medium leading-5">

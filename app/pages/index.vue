@@ -22,17 +22,17 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <div class="bg-surface relative flex min-h-screen items-center justify-center px-4 py-[111px]">
-    <div class="border-neutral-100 flex w-full max-w-[400px] flex-col gap-6 rounded-xl border bg-white p-[25px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]">
-      <div class="flex w-full flex-col items-center gap-4 pt-2">
-        <div class="bg-primary-600/10 flex size-12 items-center justify-center rounded-xl">
+  <div class="bg-surface relative flex min-h-screen items-center justify-center px-4 py-8 sm:py-16 lg:py-[111px]">
+    <div class="border-neutral-100 flex w-full max-w-[400px] flex-col gap-5 rounded-xl border bg-white p-5 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] sm:gap-6 sm:p-[25px]">
+      <div class="flex w-full flex-col items-center gap-3 pt-2 sm:gap-4">
+        <div class="bg-primary-600/10 flex size-11 items-center justify-center rounded-xl sm:size-12">
           <UIcon
             name="i-lucide-briefcase"
-            class="text-primary-600 size-6"
+            class="text-primary-600 size-5 sm:size-6"
           />
         </div>
-        <div class="flex w-full flex-col items-center gap-2">
-          <h1 class="text-neutral-900 text-center text-2xl font-extrabold tracking-[-0.6px]">
+        <div class="flex w-full flex-col items-center gap-1.5 sm:gap-2">
+          <h1 class="text-neutral-900 text-center text-xl font-extrabold tracking-[-0.6px] sm:text-2xl">
             Iniciar Sesión
           </h1>
           <p class="text-neutral-500 text-center text-sm font-medium">
@@ -42,7 +42,7 @@ const onSubmit = async () => {
       </div>
 
       <form
-        class="flex w-full flex-col gap-5 pb-4"
+        class="flex w-full flex-col gap-4 pb-4 sm:gap-5"
         @submit.prevent="onSubmit"
       >
         <div class="flex w-full flex-col gap-2">
@@ -138,6 +138,6 @@ const onSubmit = async () => {
       </div>
     </div>
 
-    <div class="from-primary-600/0 via-primary-600/50 to-primary-600/0 pointer-events-none absolute bottom-0 left-1/2 h-1 w-[390px] -translate-x-1/2 bg-linear-to-r opacity-50" />
+    <div class="from-primary-600/0 via-primary-600/50 to-primary-600/0 pointer-events-none absolute bottom-0 left-1/2 h-1 w-[90%] max-w-[390px] -translate-x-1/2 bg-linear-to-r opacity-50" />
   </div>
 </template>

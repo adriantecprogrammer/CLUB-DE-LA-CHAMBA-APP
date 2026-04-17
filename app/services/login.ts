@@ -3,7 +3,7 @@ import type { ILogin } from '~/interfaces/Ilogin'
 
 const loginApi = {
   login: async (email: string, password: string) => {
-    const response = await axiosInstance.post<ILogin>('/auth/login', {
+    const response = await axiosInstance.post<ILogin>('/login', {
       email,
       password
     })

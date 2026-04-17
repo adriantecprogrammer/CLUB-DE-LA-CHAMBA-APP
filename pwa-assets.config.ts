@@ -33,5 +33,5 @@ export default defineConfig({
       }
     }
   },
-  images: ['public/images/club_oficios_alta.svg']
+  images: ['public/images/club_oficios_logo_blanco.png']
 })

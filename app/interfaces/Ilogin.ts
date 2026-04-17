@@ -18,3 +18,8 @@ export interface IUser {
   updatedAt: string
   deletedAt: null
 }
+
+export interface ILoginRequest {
+  email: string
+  passwordHash: string
+}

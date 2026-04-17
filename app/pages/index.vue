@@ -11,7 +11,7 @@ const onSubmit = async () => {
   errorMessage.value = ''
   loading.value = true
   try {
-    await loginApi.login(email.value, password.value)
+    await loginApi.login({ email: email.value, passwordHash: password.value })
   } catch (err) {
     errorMessage.value = 'No pudimos iniciar sesión. Verifica tus datos.'
     console.error(err)

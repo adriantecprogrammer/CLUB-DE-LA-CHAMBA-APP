@@ -25,12 +25,12 @@ const onSubmit = async () => {
   <div class="bg-surface relative flex min-h-screen items-center justify-center px-4 py-8 sm:py-16 lg:py-[111px]">
     <div class="border-neutral-100 flex w-full max-w-[400px] flex-col gap-5 rounded-xl border bg-white p-5 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] sm:gap-6 sm:p-[25px]">
       <div class="flex w-full flex-col items-center gap-3 pt-2 sm:gap-4">
-        <div class="bg-primary-600/10 flex size-11 items-center justify-center rounded-xl sm:size-12">
-          <UIcon
-            name="i-lucide-briefcase"
-            class="text-primary-600 size-5 sm:size-6"
-          />
-        </div>
+        <NuxtImg
+          src="/images/logo_club_oficios.svg"
+          alt="ClubOficios"
+          class="h-auto w-full max-w-[160px] object-contain sm:max-w-[180px]"
+          loading="eager"
+        />
         <div class="flex w-full flex-col items-center gap-1.5 sm:gap-2">
           <h1 class="text-neutral-900 text-center text-xl font-extrabold tracking-[-0.6px] sm:text-2xl">
             Iniciar Sesión

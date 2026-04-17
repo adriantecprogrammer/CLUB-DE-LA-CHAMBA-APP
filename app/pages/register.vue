@@ -50,7 +50,7 @@ const onSubmit = async () => {
       await providersApi.createProvider(providerPayload)
     }
 
-    await navigateTo('/login')
+    await navigateTo('/')
   } catch (err) {
     errorMessage.value = 'No pudimos crear tu cuenta. Intenta de nuevo.'
     console.error(err)
@@ -63,7 +63,7 @@ const goBack = () => {
   if (window.history.length > 1) {
     window.history.back()
   } else {
-    navigateTo('/login')
+    navigateTo('/')
   }
 }
 </script>
@@ -87,11 +87,11 @@ const goBack = () => {
       </h2>
     </header>
 
-    <div class="aspect-2816/1536 max-h-[280px] w-full overflow-hidden sm:max-h-[360px]">
+    <div class="mx-auto flex w-full max-w-[480px] justify-center px-4 pt-4 sm:max-w-[560px]">
       <NuxtImg
-        src="/images/cluboficios-hero.png"
+        src="/images/logo_club_oficios.svg"
         alt="ClubOficios"
-        class="size-full object-cover"
+        class="h-auto w-full max-w-[200px] object-contain sm:max-w-[240px]"
         loading="eager"
       />
     </div>
@@ -307,7 +307,7 @@ const goBack = () => {
         <p class="text-neutral-600 text-center">
           ¿Ya tienes una cuenta?
           <NuxtLink
-            to="/login"
+            to="/"
             class="text-primary-600 font-bold hover:underline"
           >
             Iniciar sesión

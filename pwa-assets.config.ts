@@ -33,5 +33,5 @@ export default defineConfig({
       }
     }
   },
-  images: ['public/images/result_club_oficios_logo_blanco.png']
+  images: ['public/images/launcher_icons/launcher_icons/ic_launcher_play.png']
 })

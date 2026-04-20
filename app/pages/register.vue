@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import registerApi from '~/services/registerApi'
 import providersApi from '~/services/providersApi'
+import categoriesApi from '~/services/categoriesApi'
 import type { IUserCreate } from '~/interfaces/IUser'
 import type { IProviderCreate } from '~/interfaces/IProvider'
+import type { ICategories } from '~/interfaces/ICategories'
 
 type Role = 'cliente' | 'proveedor'
 
@@ -16,6 +19,20 @@ const experienceYears = ref<number | null>(null)
 const showPassword = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
+
+const availableCategories = ref<ICategories[]>([])
+const selectedCategoryIds = ref<string[]>([])
+
+onMounted(async () => {
+  try {
+    const categories = await categoriesApi.getCategories()
+    // Map categories to have 'label' for Nuxt UI v4 compatibility if needed
+    // though label-key/option-attribute might still work, explicit mapping is safer.
+    availableCategories.value = categories
+  } catch (err) {
+    console.error('Error fetching categories:', err)
+  }
+})
 
 const splitFullName = (value: string) => {
   const parts = value.trim().split(/\s+/).filter(Boolean)
@@ -47,7 +64,13 @@ const onSubmit = async () => {
         experienceYears: experienceYears.value ?? 0,
         verified: 0
       }
-      await providersApi.createProvider(providerPayload)
+      const createdProvider = await providersApi.createProvider(providerPayload)
+
+      if (selectedCategoryIds.value.length > 0) {
+        await categoriesApi.addCategoriesToProvider(createdProvider.id, {
+          categoryIds: selectedCategoryIds.value
+        })
+      }
     }
 
     await navigateTo('/')
@@ -242,6 +265,27 @@ const goBack = () => {
               icon="i-lucide-briefcase"
               size="xl"
               required
+              :ui="{
+                base: 'w-full bg-surface-muted border border-neutral-200 rounded-lg text-base text-neutral-900 placeholder:text-neutral-400 focus:ring-1 focus:ring-primary-600 focus:border-primary-600',
+                leadingIcon: 'text-neutral-400'
+              }"
+            />
+          </div>
+
+          <div class="flex w-full flex-col gap-1.5">
+            <label
+              for="categories"
+              class="text-neutral-900 text-sm font-semibold"
+            >Categorías de servicio</label>
+            <USelectMenu
+              id="categories"
+              v-model="selectedCategoryIds"
+              :items="availableCategories"
+              label-key="name"
+              value-key="id"
+              multiple
+              placeholder="Selecciona las categorías"
+              size="xl"
               :ui="{
                 base: 'w-full bg-surface-muted border border-neutral-200 rounded-lg text-base text-neutral-900 placeholder:text-neutral-400 focus:ring-1 focus:ring-primary-600 focus:border-primary-600',
                 leadingIcon: 'text-neutral-400'

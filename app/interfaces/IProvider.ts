@@ -4,3 +4,8 @@ export interface IProviderCreate {
   experienceYears: number
   verified: number
 }
+
+export interface IProviderCreateResponse {
+  message: string
+  id: string
+}

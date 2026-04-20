@@ -1,9 +1,9 @@
 import axiosInstance from './axiosInstance'
-import type { IProviderCreate } from '~/interfaces/IProvider'
+import type { IProviderCreate, IProviderCreateResponse } from '~/interfaces/IProvider'
 
 const providersApi = {
-  async createProvider(provider: IProviderCreate): Promise<IProviderCreate> {
-    const response = await axiosInstance.post<IProviderCreate>(
+  async createProvider(provider: IProviderCreate): Promise<IProviderCreateResponse> {
+    const response = await axiosInstance.post<IProviderCreateResponse>(
       '/providers/create',
       provider
     )

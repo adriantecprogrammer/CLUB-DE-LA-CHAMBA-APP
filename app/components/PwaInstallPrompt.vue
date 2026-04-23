@@ -25,7 +25,7 @@ function dismiss() {
           <img src="/pwa-64x64.png" alt="Club de la Chamba" class="w-12 h-12 rounded-xl flex-shrink-0">
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-gray-900 dark:text-white text-sm">
-              Club de la Chamba
+              Club de oficios app
             </p>
             <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
               Instala la app para acceder mas rapido

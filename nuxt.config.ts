@@ -7,8 +7,8 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
-      name: 'Club de la Chamba',
-      short_name: 'ChambaApp',
+      name: 'Club de oficios app',
+      short_name: 'Club Oficios',
       description: 'Club de la Chamba - Encuentra y ofrece oficios',
       lang: 'es',
       theme_color: '#0ea5e9',

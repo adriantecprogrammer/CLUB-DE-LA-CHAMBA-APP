@@ -22,7 +22,11 @@ function dismiss() {
     >
       <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4">
         <div class="flex items-start gap-3">
-          <img src="/pwa-64x64.png" alt="Club de la Chamba" class="w-12 h-12 rounded-xl flex-shrink-0">
+          <img
+            src="/pwa-64x64.png"
+            alt="Club de la Chamba"
+            class="w-12 h-12 rounded-xl flex-shrink-0"
+          >
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-gray-900 dark:text-white text-sm">
               Club de oficios app
@@ -36,7 +40,10 @@ function dismiss() {
             aria-label="Cerrar"
             @click="dismiss"
           >
-            <UIcon name="i-lucide-x" class="w-4 h-4" />
+            <UIcon
+              name="i-lucide-x"
+              class="w-4 h-4"
+            />
           </button>
         </div>
         <div class="flex gap-2 mt-3">

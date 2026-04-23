@@ -24,29 +24,7 @@ useSeoMeta({
 </script>
 
 <template>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<NuxtPwaAssets />
+  <NuxtPwaAssets />
   <NuxtPage />
   <PwaInstallPrompt />
 </template>

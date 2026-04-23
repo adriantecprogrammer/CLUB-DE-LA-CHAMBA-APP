@@ -26,4 +26,5 @@ useSeoMeta({
 
 <template>
   <NuxtPage />
+  <PwaInstallPrompt />
 </template>

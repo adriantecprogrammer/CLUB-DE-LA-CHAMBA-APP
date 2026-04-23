@@ -11,7 +11,7 @@ export interface IUser {
   email: string
   passwordHash: string
   phone: string
-  role: string
+  role: 'client' | 'provider'
   avatarUrl: null
   isActive: number
   createdAt: string

@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance'
-import type { IProviderCreate, IProviderCreateResponse } from '~/interfaces/IProvider'
+import type { IProviderCreate, IProviderCreateResponse, IProviders } from '~/interfaces/IProvider'
 
 const providersApi = {
   async createProvider(provider: IProviderCreate): Promise<IProviderCreateResponse> {
@@ -8,7 +8,13 @@ const providersApi = {
       provider
     )
     return response.data
+  },
+
+  async getAllProviders(): Promise<IProviders[]> {
+    const response = await axiosInstance.get<IProviders[]>('/providers/all')
+    return response.data
   }
+
 }
 
 export default providersApi

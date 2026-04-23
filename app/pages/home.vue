@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import type { ILogin } from '~/interfaces/Ilogin'
 import type { ICategories } from '~/interfaces/ICategories'
+import type { IProviders } from '~/interfaces/IProvider'
+import type { IUser } from '~/interfaces/IUser'
 import categoriesApi from '~/services/categoriesApi'
+import providersApi from '~/services/providersApi'
+import userApi from '~/services/usetApi'
+
+type ProviderWithUser = IProviders & { user: IUser | null }
 
 const session = ref<ILogin | null>(null)
 const activeTab = ref('inicio')
@@ -49,12 +55,30 @@ async function fetchCategories() {
   }
 }
 
-// --- Providers (mock — pending real endpoint) ---
-const providers = [
-  { initials: 'JD', name: 'Juan Domínguez', specialty: 'Fontanero Experto', rating: 4.9, distance: '1.2 km de ti', price: '35€', online: true },
-  { initials: 'SS', name: 'Sara Sánchez', specialty: 'Limpieza Profunda', rating: 4.7, distance: '2.0 km de ti', price: '25€', online: false },
-  { initials: 'MR', name: 'Miguel Ruiz', specialty: 'Electricista Maestro', rating: 5.0, distance: '3.5 km de ti', price: '45€', online: true }
-]
+// --- Providers ---
+const providers = ref<ProviderWithUser[]>([])
+const providersLoading = ref(false)
+
+async function fetchProviders() {
+  providersLoading.value = true
+  try {
+    const list = await providersApi.getAllProviders()
+    providers.value = await Promise.all(
+      list.map(async (p) => {
+        try {
+          const user = await userApi.getUserById(p.userId)
+          return { ...p, user }
+        } catch {
+          return { ...p, user: null }
+        }
+      })
+    )
+  } catch (err) {
+    console.error('Error al cargar proveedores:', err)
+  } finally {
+    providersLoading.value = false
+  }
+}
 
 onMounted(() => {
   const raw = localStorage.getItem('session')
@@ -65,6 +89,7 @@ onMounted(() => {
   session.value = JSON.parse(raw) as ILogin
   fetchLocation()
   fetchCategories()
+  fetchProviders()
 })
 
 const user = computed(() => session.value?.user ?? null)
@@ -169,80 +194,10 @@ const user = computed(() => session.value?.user ?? null)
         </div>
       </section>
 
-      <!-- Profesionales cercanos -->
-      <section class="pt-6">
-        <div class="flex items-center justify-between mb-4 px-5">
-          <h2 class="text-[20px] font-bold text-[#0d131b]">
-            Profesionales cercanos
-          </h2>
-          <button class="text-[14px] font-semibold text-primary-600 shrink-0">
-            Ver todo
-          </button>
-        </div>
-
-        <div class="flex gap-4 overflow-x-auto px-5 pb-6 scrollbar-hide snap-x snap-mandatory">
-          <div
-            v-for="provider in providers"
-            :key="provider.name"
-            class="bg-white border border-[#f3f4f6] rounded-2xl shadow-[0px_4px_20px_-2px_rgba(19,109,236,0.08)] p-[17px] flex flex-col gap-4 shrink-0 w-[280px] snap-start"
-          >
-            <div class="flex items-start gap-4">
-              <div class="relative shrink-0">
-                <div class="size-16 rounded-full border-2 border-white shadow-sm bg-primary-600 flex items-center justify-center">
-                  <span class="text-white text-lg font-bold">
-                    {{ provider.initials }}
-                  </span>
-                </div>
-                <span
-                  class="absolute -bottom-1 -right-1 size-4 rounded-full border-2 border-white"
-                  :class="provider.online ? 'bg-green-500' : 'bg-neutral-400'"
-                />
-              </div>
-
-              <div class="flex-1 min-w-0">
-                <div class="flex items-start justify-between mb-0.5">
-                  <span class="text-[16px] font-bold text-[#0d131b] truncate pr-2">
-                    {{ provider.name }}
-                  </span>
-                  <div class="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded shrink-0">
-                    <UIcon
-                      name="i-lucide-star"
-                      class="size-3 text-yellow-600 fill-yellow-600"
-                    />
-                    <span class="text-[12px] font-bold text-yellow-700">
-                      {{ provider.rating }}
-                    </span>
-                  </div>
-                </div>
-                <p class="text-[14px] text-neutral-500">
-                  {{ provider.specialty }}
-                </p>
-                <div class="flex items-center gap-1 mt-1.5">
-                  <UIcon
-                    name="i-lucide-navigation"
-                    class="size-3 text-neutral-400"
-                  />
-                  <span class="text-[12px] text-neutral-500">
-                    {{ provider.distance }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div class="border-t border-[#f9fafb] pt-3 flex items-center justify-between">
-              <div class="flex items-baseline gap-0.5">
-                <span class="text-[18px] font-bold text-primary-600">
-                  {{ provider.price }}
-                </span>
-                <span class="text-[12px] text-neutral-500">/hr</span>
-              </div>
-              <button class="bg-primary-600 text-white text-[14px] font-semibold px-4 py-2 rounded-lg shadow-[0px_1px_2px_0px_#bfdbfe] transition active:scale-95">
-                Reservar
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeProvidersCarousel
+        :providers="providers"
+        :loading="providersLoading"
+      />
 
       <!-- Oferta especial -->
       <div class="mx-5">
@@ -266,13 +221,3 @@ const user = computed(() => session.value?.user ?? null)
     <HomeBottomNav v-model="activeTab" />
   </div>
 </template>
-
-<style scoped>
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-</style>

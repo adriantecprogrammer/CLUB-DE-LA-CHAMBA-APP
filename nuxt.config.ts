@@ -62,7 +62,7 @@ export default defineNuxtConfig({
       maximumFileSizeToCacheInBytes: 8 * 1024 * 1024
     },
     client: {
-      installPrompt: true
+      installPrompt: 'pwa-install-dismissed'
     },
     devOptions: {
       enabled: true,

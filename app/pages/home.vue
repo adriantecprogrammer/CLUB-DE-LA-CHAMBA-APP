@@ -10,21 +10,13 @@ definePageMeta({ middleware: 'auth' })
 
 type ProviderWithUser = IProviders & { user: IUser | null }
 
-const { user, initSession, clearSession } = useAuth()
+const { user, clearSession } = useAuth()
 const activeTab = ref('inicio')
 
 const logout = async () => {
   clearSession()
   await navigateTo('/')
 }
-
-const memberSince = computed(() => {
-  if (!user.value?.createdAt) return ''
-  return new Date(user.value.createdAt).toLocaleDateString('es-MX', {
-    year: 'numeric',
-    month: 'long'
-  })
-})
 
 // --- Location ---
 const { cityName, locationLoading, fetchLocation } = useLocation()
@@ -95,7 +87,6 @@ async function fetchProviders() {
 }
 
 onMounted(() => {
-  initSession()
   fetchLocation()
   fetchCategories()
   fetchProviders()

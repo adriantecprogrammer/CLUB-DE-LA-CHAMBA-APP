@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import loginApi from '~/services/login'
 
-definePageMeta({ middleware: 'guest' })
-
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
 
-const { saveSession } = useAuth()
+const { isAuthenticated, saveSession } = useAuth()
+
+onMounted(() => {
+  if (isAuthenticated.value) {
+    navigateTo('/home')
+  }
+})
 
 const onSubmit = async () => {
   errorMessage.value = ''

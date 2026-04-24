@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import loginApi from '~/services/login'
 
+definePageMeta({ middleware: 'guest' })
+
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)

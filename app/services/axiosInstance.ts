@@ -7,4 +7,17 @@ const axiosInstance = axios.create({
   }
 })
 
+axiosInstance.interceptors.request.use((config) => {
+  if (import.meta.client) {
+    const raw = localStorage.getItem('session')
+    if (raw) {
+      const session = JSON.parse(raw)
+      if (session?.token) {
+        config.headers.Authorization = `Bearer ${session.token}`
+      }
+    }
+  }
+  return config
+})
+
 export default axiosInstance

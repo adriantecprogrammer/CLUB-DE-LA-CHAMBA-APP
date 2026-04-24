@@ -7,12 +7,14 @@ const showPassword = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
 
+const { saveSession } = useAuth()
+
 const onSubmit = async () => {
   errorMessage.value = ''
   loading.value = true
   try {
     const data = await loginApi.login({ email: email.value, passwordHash: password.value })
-    localStorage.setItem('session', JSON.stringify(data))
+    saveSession(data)
     await navigateTo('/home')
   } catch (err) {
     errorMessage.value = 'No pudimos iniciar sesión. Verifica tus datos.'

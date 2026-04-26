@@ -86,6 +86,10 @@ async function fetchProviders() {
   }
 }
 
+watch(activeTab, (val) => {
+  if (val === 'solicitudes') navigateTo('/solicitudes')
+})
+
 onMounted(() => {
   fetchLocation()
   fetchCategories()

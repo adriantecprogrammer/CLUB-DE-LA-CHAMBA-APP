@@ -10,14 +10,13 @@ const emit = defineEmits<{
 const navItems = [
   { key: 'inicio', label: 'Inicio', icon: 'i-lucide-home' },
   { key: 'solicitudes', label: 'Mis Solicitudes', icon: 'i-lucide-calendar' },
-  { key: 'mensajes', label: 'Mensajes', icon: 'i-lucide-message-circle' },
   { key: 'perfil', label: 'Perfil', icon: 'i-lucide-user' }
 ]
 </script>
 
 <template>
   <nav class="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-[#f3f4f6] px-6 pt-2 pb-safe">
-    <div class="flex items-center justify-between pb-2">
+    <div class="flex items-center justify-evenly pb-2">
       <button
         v-for="item in navItems"
         :key="item.key"

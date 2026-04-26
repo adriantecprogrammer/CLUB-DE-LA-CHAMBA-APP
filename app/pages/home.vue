@@ -128,23 +128,26 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Search bar -->
+        <!-- Search bar trigger -->
         <div class="px-5 pt-4">
-          <div class="relative bg-white rounded-xl border border-[#f3f4f6] shadow-[0px_4px_20px_-2px_rgba(19,109,236,0.08)] px-4 py-[17px] flex items-center gap-3">
+          <button
+            class="w-full relative bg-white rounded-xl border border-[#f3f4f6] shadow-[0px_4px_20px_-2px_rgba(19,109,236,0.08)] px-4 py-[17px] flex items-center gap-3 transition active:scale-[0.98]"
+            @click="navigateTo('/search')"
+          >
             <UIcon
               name="i-lucide-search"
               class="size-[18px] text-neutral-400 shrink-0"
             />
-            <span class="text-neutral-400 text-base flex-1">
+            <span class="text-neutral-400 text-base flex-1 text-left">
               ¿Qué servicio necesitas?
             </span>
-            <button class="p-2 shrink-0">
+            <div class="p-2 shrink-0">
               <UIcon
                 name="i-lucide-sliders-horizontal"
                 class="size-[18px] text-neutral-400"
               />
-            </button>
-          </div>
+            </div>
+          </button>
         </div>
 
         <!-- Categorías -->

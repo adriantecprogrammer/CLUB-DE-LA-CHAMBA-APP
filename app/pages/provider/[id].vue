@@ -3,6 +3,8 @@ definePageMeta({ middleware: ['auth'] })
 
 const route = useRoute()
 const providerId = route.params.id as string
+const { user } = useAuth()
+const homePath = computed(() => user.value?.role?.toLowerCase().includes('provider') ? '/provider-home' : '/home')
 </script>
 
 <template>
@@ -11,7 +13,7 @@ const providerId = route.params.id as string
       <ProviderProfileView
         mode="client"
         :provider-id="providerId"
-        @back="navigateTo('/home')"
+        @back="navigateTo(homePath)"
       />
     </div>
   </ClientOnly>

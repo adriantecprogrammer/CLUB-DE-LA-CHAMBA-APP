@@ -8,13 +8,8 @@ import reviewsProviderApi from '~/services/reviewsProviderApi'
 
 definePageMeta({ middleware: ['auth', 'role'] })
 
-const { user, clearSession } = useAuth()
+const { user } = useAuth()
 const activeTab = ref('inicio')
-
-const logout = async () => {
-  clearSession()
-  await navigateTo('/')
-}
 
 // --- Provider profile ---
 const provider = ref<IProviderCompleteData | null>(null)
@@ -423,7 +418,6 @@ onMounted(async () => {
           mode="own"
           :provider-id="provider.id"
           @back="activeTab = 'inicio'"
-          @logout="logout"
         />
       </template>
     </div>

@@ -11,7 +11,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   back: []
-  logout: []
 }>()
 
 const { clearSession } = useAuth()
@@ -366,7 +365,7 @@ onMounted(() => {
       >
         <button
           class="flex items-center justify-center gap-2 bg-[#fef2f2] p-3 rounded-xl w-full transition active:bg-red-100"
-          @click="emit('logout')"
+          @click="logout"
         >
           <UIcon
             name="i-lucide-log-out"

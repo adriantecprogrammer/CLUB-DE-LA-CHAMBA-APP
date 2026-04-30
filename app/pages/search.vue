@@ -11,6 +11,7 @@ definePageMeta({ middleware: 'auth' })
 type ProviderWithUser = IProviders & { user: IUser | null }
 
 const { user } = useAuth()
+const homePath = computed(() => user.value?.role?.toLowerCase().includes('provider') ? '/provider-home' : '/home')
 const searchQuery = ref('')
 const searchInput = ref<HTMLInputElement | null>(null)
 
@@ -107,7 +108,7 @@ onMounted(() => {
   }, 300)
 })
 
-const goBack = () => navigateTo('/home')
+const goBack = () => navigateTo(homePath.value)
 </script>
 
 <template>

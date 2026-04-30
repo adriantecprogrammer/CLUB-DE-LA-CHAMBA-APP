@@ -34,9 +34,11 @@ async function fetchProfile() {
 }
 
 async function fetchReviews() {
+  const realProviderId = provider.value?.provider?.id
+  if (!realProviderId) return
   reviewsLoading.value = true
   try {
-    reviews.value = await reviewsProviderApi.getReviewsProviderByUser(props.providerId)
+    reviews.value = await reviewsProviderApi.getReviewsProviderByUser(realProviderId)
   } catch (err) {
     console.error('Error al cargar reseñas:', err)
   } finally {
@@ -73,8 +75,8 @@ const reviewBreakdown = computed(() => {
   }))
 })
 
-onMounted(() => {
-  fetchProfile()
+onMounted(async () => {
+  await fetchProfile()
   fetchReviews()
 })
 </script>

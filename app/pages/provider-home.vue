@@ -105,11 +105,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ClientOnly>
-    <div
-      v-if="user"
-      class="bg-white min-h-screen font-[Manrope,sans-serif]"
-    >
+  <div
+    v-if="user"
+    class="bg-white min-h-screen font-[Manrope,sans-serif]"
+  >
       <!-- ═══════════════════════════════════════════ -->
       <!--                TAB: INICIO                -->
       <!-- ═══════════════════════════════════════════ -->
@@ -557,6 +556,5 @@ onMounted(async () => {
           @back="activeTab = 'inicio'"
         />
       </template>
-    </div>
-  </ClientOnly>
+  </div>
 </template>

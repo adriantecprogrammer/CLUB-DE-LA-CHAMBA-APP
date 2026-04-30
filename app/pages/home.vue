@@ -6,7 +6,7 @@ import categoriesApi from '~/services/categoriesApi'
 import providersApi from '~/services/providersApi'
 import userApi from '~/services/usetApi'
 
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: ['auth', 'role'] })
 
 type ProviderWithUser = IProviders & { user: IUser | null }
 

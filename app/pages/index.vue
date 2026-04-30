@@ -7,11 +7,11 @@ const showPassword = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
 
-const { isAuthenticated, saveSession } = useAuth()
+const { isAuthenticated, saveSession, user } = useAuth()
 
 onMounted(() => {
-  if (isAuthenticated.value) {
-    navigateTo('/home')
+  if (isAuthenticated.value && user.value) {
+    navigateTo(user.value.role === 'provider' ? '/provider-home' : '/home')
   }
 })
 
@@ -21,7 +21,7 @@ const onSubmit = async () => {
   try {
     const data = await loginApi.login({ email: email.value, passwordHash: password.value })
     saveSession(data)
-    await navigateTo('/home')
+    await navigateTo(data.user.role === 'provider' ? '/provider-home' : '/home')
   } catch (err) {
     errorMessage.value = 'No pudimos iniciar sesión. Verifica tus datos.'
     console.error(err)

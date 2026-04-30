@@ -11,12 +11,12 @@ const loading = ref(false)
 const activeFilter = ref<'activas' | 'pasadas'>('activas')
 
 // ── Status config ──────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { label: string; dotBg: string; badgeBg: string; badgeColor: string }> = {
-  pending:     { label: 'Pendiente',  dotBg: 'bg-[#fef3c7]', badgeBg: 'bg-[#fffbeb]', badgeColor: 'text-[#d97706]'  },
-  in_progress: { label: 'En curso',   dotBg: 'bg-[#dbeafe]', badgeBg: 'bg-[#eff6ff]', badgeColor: 'text-[#136dec]'  },
-  accepted:    { label: 'Aceptado',   dotBg: 'bg-[#d1fae5]', badgeBg: 'bg-[#ecfdf5]', badgeColor: 'text-[#059669]'  },
-  completed:   { label: 'Completado', dotBg: 'bg-[#d1fae5]', badgeBg: 'bg-[#ecfdf5]', badgeColor: 'text-[#059669]'  },
-  cancelled:   { label: 'Cancelado',  dotBg: 'bg-[#fee2e2]', badgeBg: 'bg-[#fef2f2]', badgeColor: 'text-[#dc2626]'  },
+const STATUS_CONFIG: Record<string, { label: string, dotBg: string, badgeBg: string, badgeColor: string }> = {
+  pending: { label: 'Pendiente', dotBg: 'bg-[#fef3c7]', badgeBg: 'bg-[#fffbeb]', badgeColor: 'text-[#d97706]' },
+  in_progress: { label: 'En curso', dotBg: 'bg-[#dbeafe]', badgeBg: 'bg-[#eff6ff]', badgeColor: 'text-[#136dec]' },
+  accepted: { label: 'Aceptado', dotBg: 'bg-[#d1fae5]', badgeBg: 'bg-[#ecfdf5]', badgeColor: 'text-[#059669]' },
+  completed: { label: 'Completado', dotBg: 'bg-[#d1fae5]', badgeBg: 'bg-[#ecfdf5]', badgeColor: 'text-[#059669]' },
+  cancelled: { label: 'Cancelado', dotBg: 'bg-[#fee2e2]', badgeBg: 'bg-[#fef2f2]', badgeColor: 'text-[#dc2626]' }
 }
 
 function getStatusConfig(status: string) {
@@ -25,16 +25,16 @@ function getStatusConfig(status: string) {
 
 // ── Icon from title keywords ───────────────────────────────────
 const ICON_KEYWORDS = [
-  { keywords: ['font', 'plom', 'agua', 'tuber'],         icon: 'i-lucide-droplets'    },
-  { keywords: ['elec', 'luz', 'volt', 'cable', 'revis'], icon: 'i-lucide-zap'          },
-  { keywords: ['limp', 'aseo', 'bañ', 'baño'],           icon: 'i-lucide-sparkles'     },
-  { keywords: ['carp', 'madera', 'mueble'],               icon: 'i-lucide-hammer'       },
-  { keywords: ['pint', 'color', 'barniz'],                icon: 'i-lucide-paint-bucket' },
-  { keywords: ['jard', 'plant', 'poda', 'pasto'],        icon: 'i-lucide-leaf'         },
-  { keywords: ['mud', 'transport', 'flete'],              icon: 'i-lucide-truck'        },
-  { keywords: ['clima', 'aire', 'a/c', 'ac', 'reparac'], icon: 'i-lucide-wind'         },
-  { keywords: ['gas'],                                    icon: 'i-lucide-flame'        },
-  { keywords: ['alarm', 'segur', 'camara'],              icon: 'i-lucide-shield'       },
+  { keywords: ['font', 'plom', 'agua', 'tuber'], icon: 'i-lucide-droplets' },
+  { keywords: ['elec', 'luz', 'volt', 'cable', 'revis'], icon: 'i-lucide-zap' },
+  { keywords: ['limp', 'aseo', 'bañ', 'baño'], icon: 'i-lucide-sparkles' },
+  { keywords: ['carp', 'madera', 'mueble'], icon: 'i-lucide-hammer' },
+  { keywords: ['pint', 'color', 'barniz'], icon: 'i-lucide-paint-bucket' },
+  { keywords: ['jard', 'plant', 'poda', 'pasto'], icon: 'i-lucide-leaf' },
+  { keywords: ['mud', 'transport', 'flete'], icon: 'i-lucide-truck' },
+  { keywords: ['clima', 'aire', 'a/c', 'ac', 'reparac'], icon: 'i-lucide-wind' },
+  { keywords: ['gas'], icon: 'i-lucide-flame' },
+  { keywords: ['alarm', 'segur', 'camara'], icon: 'i-lucide-shield' }
 ]
 
 function getIcon(title: string) {
@@ -44,8 +44,8 @@ function getIcon(title: string) {
 }
 
 // ── Filters ────────────────────────────────────────────────────
-const ACTIVE_STATUSES  = ['pending', 'in_progress', 'accepted']
-const PAST_STATUSES    = ['completed', 'cancelled']
+const ACTIVE_STATUSES = ['pending', 'in_progress', 'accepted']
+const PAST_STATUSES = ['completed', 'cancelled']
 
 const filteredRequests = computed(() =>
   requests.value.filter(r =>
@@ -58,12 +58,12 @@ const filteredRequests = computed(() =>
 // ── Helpers ────────────────────────────────────────────────────
 function formatSchedule(scheduledAt: string | null, status: string): string {
   if (!scheduledAt) return status === 'pending' ? 'Esperando Aprobación' : 'Sin fecha programada'
-  const date     = new Date(scheduledAt)
-  const today    = new Date()
+  const date = new Date(scheduledAt)
+  const today = new Date()
   const tomorrow = new Date(today)
   tomorrow.setDate(today.getDate() + 1)
   const time = date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
-  if (date.toDateString() === today.toDateString())    return `Hoy, ${time}`
+  if (date.toDateString() === today.toDateString()) return `Hoy, ${time}`
   if (date.toDateString() === tomorrow.toDateString()) return `Mañana, ${time}`
   return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) + ', ' + time
 }

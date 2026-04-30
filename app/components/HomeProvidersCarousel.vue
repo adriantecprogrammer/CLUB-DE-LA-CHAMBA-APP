@@ -156,7 +156,10 @@ function formatRating(avg: number) {
               </span>
             </div>
             <div v-else />
-            <button class="bg-primary-600 text-white text-[14px] font-semibold px-4 py-2 rounded-lg shadow-[0px_1px_2px_0px_#bfdbfe] transition active:scale-95">
+            <button
+              class="bg-primary-600 text-white text-[14px] font-semibold px-4 py-2 rounded-lg shadow-[0px_1px_2px_0px_#bfdbfe] transition active:scale-95"
+              @click="navigateTo('/provider/' + provider.userId)"
+            >
               Contactar
             </button>
           </div>

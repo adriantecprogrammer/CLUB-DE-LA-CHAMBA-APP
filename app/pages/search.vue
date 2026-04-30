@@ -237,7 +237,8 @@ const goBack = () => navigateTo('/home')
           <div
             v-for="provider in filteredProviders"
             :key="provider.id"
-            class="bg-white border border-[#f3f4f6] rounded-2xl shadow-sm p-4 flex gap-4 transition active:bg-neutral-50"
+            class="bg-white border border-[#f3f4f6] rounded-2xl shadow-sm p-4 flex gap-4 transition active:bg-neutral-50 cursor-pointer"
+            @click="navigateTo('/provider/' + provider.userId)"
           >
             <div class="relative shrink-0">
               <div

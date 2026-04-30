@@ -10,9 +10,9 @@ export interface IUser {
   lastName: string
   email: string
   passwordHash: string
-  phone: string;
-  role: string;
-  avatarUrl: null;
+  phone: string
+  role: string
+  avatarUrl: null
   isActive: number
   createdAt: string
   updatedAt: string

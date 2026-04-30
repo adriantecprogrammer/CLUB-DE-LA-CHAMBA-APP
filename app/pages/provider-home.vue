@@ -86,8 +86,15 @@ const sortedRequests = computed(() =>
   [...requests.value].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 )
 
+const solicitudesFilter = ref('all')
+
+const filteredRequests = computed(() => {
+  if (solicitudesFilter.value === 'all') return sortedRequests.value
+  return sortedRequests.value.filter(r => r.status === solicitudesFilter.value)
+})
+
 watch(activeTab, (val) => {
-  if (val === 'solicitudes') navigateTo('/provider-home?tab=solicitudes')
+  if (val === 'solicitudes') fetchRequests()
 })
 
 onMounted(async () => {
@@ -401,6 +408,136 @@ onMounted(async () => {
                 <p class="text-[11px] text-neutral-400">
                   {{ formatDate(review.createdAt) }}
                 </p>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <HomeBottomNav v-model="activeTab" />
+      </template>
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!--            TAB: SOLICITUDES               -->
+      <!-- ═══════════════════════════════════════════ -->
+      <template v-else-if="activeTab === 'solicitudes'">
+        <header class="sticky top-0 z-20 backdrop-blur-sm bg-[rgba(248,249,252,0.95)] border-b border-[#f3f4f6] px-5 py-4">
+          <h2 class="text-[20px] font-bold text-[#0d131b]">
+            Mis Solicitudes
+          </h2>
+          <p class="text-[13px] text-neutral-400 mt-0.5">
+            {{ requests.length }} solicitudes en total
+          </p>
+        </header>
+
+        <main class="bg-[#f8f9fc] pb-[100px] min-h-screen">
+          <!-- Filtros -->
+          <section class="px-5 pt-4">
+            <div class="flex gap-2 overflow-x-auto no-scrollbar">
+              <button
+                v-for="f in [
+                  { key: 'all', label: 'Todas' },
+                  { key: 'pending', label: 'Pendientes' },
+                  { key: 'accepted', label: 'Aceptadas' },
+                  { key: 'in_progress', label: 'En progreso' },
+                  { key: 'completed', label: 'Completadas' }
+                ]"
+                :key="f.key"
+                class="px-4 py-2 rounded-full text-[12px] font-semibold whitespace-nowrap transition shrink-0"
+                :class="solicitudesFilter === f.key
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-white text-neutral-500 border border-[#f3f4f6]'"
+                @click="solicitudesFilter = f.key"
+              >
+                {{ f.label }}
+              </button>
+            </div>
+          </section>
+
+          <!-- Lista -->
+          <section class="px-5 pt-4">
+            <div
+              v-if="requestsLoading"
+              class="flex flex-col gap-3"
+            >
+              <div
+                v-for="n in 4"
+                :key="n"
+                class="bg-white border border-[#f3f4f6] rounded-xl p-4 animate-pulse"
+              >
+                <div class="flex justify-between mb-3">
+                  <div class="h-4 w-32 rounded bg-neutral-100" />
+                  <div class="h-5 w-16 rounded-full bg-neutral-100" />
+                </div>
+                <div class="h-3 w-full rounded bg-neutral-100 mb-2" />
+                <div class="h-3 w-2/3 rounded bg-neutral-100" />
+              </div>
+            </div>
+
+            <div
+              v-else-if="filteredRequests.length === 0"
+              class="bg-white border border-[#f3f4f6] rounded-xl p-8 flex flex-col items-center gap-3"
+            >
+              <div class="size-14 rounded-full bg-neutral-100 flex items-center justify-center">
+                <UIcon
+                  name="i-lucide-inbox"
+                  class="size-7 text-neutral-400"
+                />
+              </div>
+              <p class="text-[14px] text-neutral-400 font-medium">
+                {{ solicitudesFilter === 'all' ? 'Aún no tienes solicitudes' : 'No hay solicitudes con este estado' }}
+              </p>
+            </div>
+
+            <div
+              v-else
+              class="flex flex-col gap-3"
+            >
+              <div
+                v-for="req in filteredRequests"
+                :key="req.id"
+                class="bg-white border border-[#f3f4f6] rounded-xl p-4 transition active:scale-[0.98]"
+              >
+                <div class="flex items-start justify-between mb-2">
+                  <h3 class="text-[14px] font-bold text-[#0d131b]">
+                    {{ req.title }}
+                  </h3>
+                  <span
+                    class="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
+                    :class="statusColor(req.status)"
+                  >
+                    {{ statusLabel(req.status) }}
+                  </span>
+                </div>
+
+                <p class="text-[13px] text-[#64748b] leading-relaxed line-clamp-2 mb-3">
+                  {{ req.description }}
+                </p>
+
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center gap-1 text-[12px] text-neutral-400">
+                    <UIcon
+                      name="i-lucide-map-pin"
+                      class="size-3.5"
+                    />
+                    <span class="line-clamp-1">{{ req.locationAddress }}</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between mt-3 pt-3 border-t border-[#f3f4f6]">
+                  <div class="flex items-center gap-1 text-[12px] text-neutral-400">
+                    <UIcon
+                      name="i-lucide-calendar"
+                      class="size-3.5"
+                    />
+                    <span>{{ formatDate(req.scheduledAt) }}</span>
+                  </div>
+                  <span
+                    v-if="req.estimatedPrice"
+                    class="text-[14px] font-bold text-[#0d131b]"
+                  >
+                    {{ formatPrice(req.estimatedPrice) }}
+                  </span>
+                </div>
               </div>
             </div>
           </section>

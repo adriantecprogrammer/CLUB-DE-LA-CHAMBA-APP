@@ -45,8 +45,8 @@ async function fetchReviews() {
 }
 
 const logout = async () => {
-  clearSession()
   await navigateTo('/')
+  clearSession()
 }
 
 const displayBio = computed(() => {

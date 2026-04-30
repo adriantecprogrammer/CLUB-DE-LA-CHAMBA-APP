@@ -19,7 +19,6 @@ const providersApi = {
     const response = await axiosInstance.get<IProviderCompleteData>(`/providers/by-user/${userId}`)
     return response.data
   }
-
 }
 
 export default providersApi

@@ -24,30 +24,30 @@ export interface IProviders {
 }
 
 export interface IProviderCompleteData {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  passwordHash: string;
-  phone: string;
-  role: string;
-  avatarUrl: string;
-  isActive: number;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: null;
-  provider: IProviderResponse;
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  passwordHash: string
+  phone: string
+  role: string
+  avatarUrl: string
+  isActive: number
+  createdAt: string
+  updatedAt: string
+  deletedAt: null
+  provider: IProviderResponse
 }
 
 export interface IProviderResponse {
-  id: string;
-  userId: string;
-  bio: string;
-  experienceYears: number;
-  verified: number;
-  ratingAvg: number;
-  ratingCount: number;
-  completedJobs: number;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  userId: string
+  bio: string
+  experienceYears: number
+  verified: number
+  ratingAvg: number
+  ratingCount: number
+  completedJobs: number
+  createdAt: string
+  updatedAt: string
 }

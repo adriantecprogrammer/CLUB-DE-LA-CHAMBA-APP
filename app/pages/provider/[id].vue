@@ -17,11 +17,11 @@ function handleBack() {
 </script>
 
 <template>
-    <div class="bg-white min-h-screen">
-      <ProviderProfileView
-        mode="client"
-        :provider-id="providerId"
-        @back="handleBack"
-      />
-    </div>
+  <div class="bg-white min-h-screen">
+    <ProviderProfileView
+      mode="client"
+      :provider-id="providerId"
+      @back="handleBack"
+    />
+  </div>
 </template>

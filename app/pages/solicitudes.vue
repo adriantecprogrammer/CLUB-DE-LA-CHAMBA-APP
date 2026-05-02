@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { IRequests } from '~/interfaces/IRequests'
+import { RequestStatus, getStatusConfig, ACTIVE_STATUSES, PAST_STATUSES } from '~/enums/requestStatus'
 import requestClientApi from '~/services/requestClientApi'
 
 definePageMeta({ middleware: 'auth' })
@@ -10,18 +11,7 @@ const requests = ref<IRequests[]>([])
 const loading = ref(false)
 const activeFilter = ref<'activas' | 'pasadas'>('activas')
 
-// ── Status config ──────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { label: string, dotBg: string, badgeBg: string, badgeColor: string }> = {
-  pending: { label: 'Pendiente', dotBg: 'bg-[#fef3c7]', badgeBg: 'bg-[#fffbeb]', badgeColor: 'text-[#d97706]' },
-  in_progress: { label: 'En curso', dotBg: 'bg-[#dbeafe]', badgeBg: 'bg-[#eff6ff]', badgeColor: 'text-[#136dec]' },
-  accepted: { label: 'Aceptado', dotBg: 'bg-[#d1fae5]', badgeBg: 'bg-[#ecfdf5]', badgeColor: 'text-[#059669]' },
-  completed: { label: 'Completado', dotBg: 'bg-[#d1fae5]', badgeBg: 'bg-[#ecfdf5]', badgeColor: 'text-[#059669]' },
-  cancelled: { label: 'Cancelado', dotBg: 'bg-[#fee2e2]', badgeBg: 'bg-[#fef2f2]', badgeColor: 'text-[#dc2626]' }
-}
-
-function getStatusConfig(status: string) {
-  return STATUS_CONFIG[status] ?? { label: status, dotBg: 'bg-neutral-100', badgeBg: 'bg-neutral-50', badgeColor: 'text-neutral-500' }
-}
+// ── Status config (imported from enums) ─────────────────────────
 
 // ── Icon from title keywords ───────────────────────────────────
 const ICON_KEYWORDS = [
@@ -44,9 +34,6 @@ function getIcon(title: string) {
 }
 
 // ── Filters ────────────────────────────────────────────────────
-const ACTIVE_STATUSES = ['pending', 'in_progress', 'accepted']
-const PAST_STATUSES = ['completed', 'cancelled']
-
 const filteredRequests = computed(() =>
   requests.value.filter(r =>
     activeFilter.value === 'activas'
@@ -57,7 +44,7 @@ const filteredRequests = computed(() =>
 
 // ── Helpers ────────────────────────────────────────────────────
 function formatSchedule(scheduledAt: string | null, status: string): string {
-  if (!scheduledAt) return status === 'pending' ? 'Esperando Aprobación' : 'Sin fecha programada'
+  if (!scheduledAt) return status === RequestStatus.PENDING ? 'Esperando Aprobación' : 'Sin fecha programada'
   const date = new Date(scheduledAt)
   const today = new Date()
   const tomorrow = new Date(today)
@@ -238,7 +225,7 @@ onMounted(fetchRequests)
           <div class="flex-1 min-w-0 pb-8">
             <div
               class="bg-white border border-[#f1f5f9] rounded-xl p-[17px] flex flex-col gap-3 drop-shadow-[0px_1px_1px_rgba(0,0,0,0.05)]"
-              :class="{ 'opacity-90': req.status === 'pending' }"
+              :class="{ 'opacity-90': req.status === RequestStatus.PENDING }"
             >
               <!-- Title + badge -->
               <div class="flex items-start justify-between gap-2">
@@ -270,14 +257,14 @@ onMounted(fetchRequests)
               <!-- Divider + bottom row -->
               <div class="border-t border-[#f1f5f9] pt-3">
                 <!-- Pending: note text -->
-                <template v-if="req.status === 'pending'">
+                <template v-if="req.status === RequestStatus.PENDING">
                   <p class="text-[12px] text-[#94a3b8] leading-4">
                     Solicitud enviada. Esperando confirmación de proveedores.
                   </p>
                 </template>
 
                 <!-- Provider assigned + in progress → Rastrear -->
-                <template v-else-if="req.status === 'in_progress' && req.providerId">
+                <template v-else-if="req.status === RequestStatus.IN_PROGRESS && req.providerId">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                       <div class="size-8 rounded-full bg-[#f1f5f9] border border-[#e2e8f0] flex items-center justify-center shrink-0">

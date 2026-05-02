@@ -1,3 +1,5 @@
+import type { RequestStatus } from '~/enums/requestStatus'
+
 export interface IRequestsProvider {
   id: string
   clientId: string
@@ -8,7 +10,7 @@ export interface IRequestsProvider {
   locationAddress: string
   locationLat: number
   locationLng: number
-  status: string
+  status: RequestStatus
   scheduledAt: string
   estimatedPrice: number
   finalPrice: number

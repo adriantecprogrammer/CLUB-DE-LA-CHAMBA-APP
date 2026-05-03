@@ -6,10 +6,15 @@ import requestClientApi from '~/services/requestClientApi'
 definePageMeta({ middleware: 'auth' })
 
 const { user } = useAuth()
+const router = useRouter()
 
 const requests = ref<IRequests[]>([])
 const loading = ref(false)
 const activeFilter = ref<'activas' | 'pasadas'>('activas')
+
+function goToDetail(id: string) {
+  router.push(`/solicitudes/${id}`)
+}
 
 // ── Status config (imported from enums) ─────────────────────────
 
@@ -222,9 +227,12 @@ onMounted(fetchRequests)
           </div>
 
           <!-- Card -->
-          <div class="flex-1 min-w-0 pb-8">
+          <div
+            class="flex-1 min-w-0 pb-8 cursor-pointer"
+            @click="goToDetail(req.id)"
+          >
             <div
-              class="bg-white border border-[#f1f5f9] rounded-xl p-[17px] flex flex-col gap-3 drop-shadow-[0px_1px_1px_rgba(0,0,0,0.05)]"
+              class="bg-white border border-[#f1f5f9] rounded-xl p-[17px] flex flex-col gap-3 drop-shadow-[0px_1px_1px_rgba(0,0,0,0.05)] transition active:scale-[0.98]"
               :class="{ 'opacity-90': req.status === RequestStatus.PENDING }"
             >
               <!-- Title + badge -->

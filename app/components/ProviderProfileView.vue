@@ -384,7 +384,10 @@ onMounted(async () => {
       class="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-[#f1f5f9] shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.05)]"
     >
       <div class="flex items-center gap-4 px-4 pt-4 pb-safe">
-        <button class="flex-1 bg-primary-600 rounded-lg h-12 flex items-center justify-center gap-2 shadow-[0px_10px_15px_-3px_rgba(59,130,246,0.2)] transition active:scale-[0.98]">
+        <NuxtLink
+          :to="`/request/${providerId}`"
+          class="flex-1 bg-primary-600 rounded-lg h-12 flex items-center justify-center gap-2 shadow-[0px_10px_15px_-3px_rgba(59,130,246,0.2)] transition active:scale-[0.98]"
+        >
           <span class="text-[16px] font-bold text-white">
             Contratar ahora
           </span>
@@ -392,7 +395,7 @@ onMounted(async () => {
             name="i-lucide-arrow-right"
             class="size-[14px] text-white"
           />
-        </button>
+        </NuxtLink>
       </div>
     </div>
   </div>

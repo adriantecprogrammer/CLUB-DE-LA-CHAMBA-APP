@@ -12,6 +12,10 @@ const categoriesApi = {
   getCategories: async (): Promise<ICategories[]> => {
     const response = await axiosInstance.get('/categories/all')
     return response.data
+  },
+  getProviderCategories: async (providerId: string): Promise<ICategories[]> => {
+    const response = await axiosInstance.get(`/providers/${providerId}/categories`)
+    return response.data
   }
 }
 

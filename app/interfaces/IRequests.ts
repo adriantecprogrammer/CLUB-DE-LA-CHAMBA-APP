@@ -37,3 +37,14 @@ export interface IProviderJobs {
   updatedAt: string
   completedAt: string
 }
+export interface IRequestsCreate {
+  clientId: string
+  providerId: string
+  categoryId: string
+  title: string
+  description: string
+  locationAddress: string
+  locationLat: number
+  locationLng: number
+  estimatedPrice: number
+}

@@ -60,6 +60,27 @@ async function fetchReviews() {
   }
 }
 
+// --- Accept request ---
+const acceptingId = ref<string | null>(null)
+
+async function acceptRequest(requestId: string) {
+  if (!provider.value?.provider || acceptingId.value) return
+  acceptingId.value = requestId
+  try {
+    await requestsProviderApi.acceptRequest(provider.value.provider.id, requestId)
+    await fetchRequests()
+  } catch (err) {
+    console.error('Error al aceptar solicitud:', err)
+    await fetchRequests()
+  } finally {
+    acceptingId.value = null
+  }
+}
+
+function viewRequestDetail(requestId: string) {
+  navigateTo(`/solicitudes/${requestId}`)
+}
+
 // --- Helpers ---
 function statusLabel(status: string) {
   return getStatusConfig(status).label
@@ -479,53 +500,13 @@ onMounted(async () => {
             v-else
             class="flex flex-col gap-3"
           >
-            <div
+            <SwipeableRequestCard
               v-for="req in filteredRequests"
               :key="req.id"
-              class="bg-white border border-[#f3f4f6] rounded-xl p-4 transition active:scale-[0.98]"
-            >
-              <div class="flex items-start justify-between mb-2">
-                <h3 class="text-[14px] font-bold text-[#0d131b]">
-                  {{ req.title }}
-                </h3>
-                <span
-                  class="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
-                  :class="statusColor(req.status)"
-                >
-                  {{ statusLabel(req.status) }}
-                </span>
-              </div>
-
-              <p class="text-[13px] text-[#64748b] leading-relaxed line-clamp-2 mb-3">
-                {{ req.description }}
-              </p>
-
-              <div class="flex items-center gap-4">
-                <div class="flex items-center gap-1 text-[12px] text-neutral-400">
-                  <UIcon
-                    name="i-lucide-map-pin"
-                    class="size-3.5"
-                  />
-                  <span class="line-clamp-1">{{ req.locationAddress }}</span>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between mt-3 pt-3 border-t border-[#f3f4f6]">
-                <div class="flex items-center gap-1 text-[12px] text-neutral-400">
-                  <UIcon
-                    name="i-lucide-calendar"
-                    class="size-3.5"
-                  />
-                  <span>{{ formatDate(req.scheduledAt) }}</span>
-                </div>
-                <span
-                  v-if="req.estimatedPrice"
-                  class="text-[14px] font-bold text-[#0d131b]"
-                >
-                  {{ formatPrice(req.estimatedPrice) }}
-                </span>
-              </div>
-            </div>
+              :request="req"
+              @accept="acceptRequest"
+              @view="viewRequestDetail"
+            />
           </div>
         </section>
       </main>

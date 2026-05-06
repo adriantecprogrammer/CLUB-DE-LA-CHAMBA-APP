@@ -1,13 +1,30 @@
 <script setup lang="ts">
 import type { IRequests } from '~/interfaces/IRequests'
-import { getStatusConfig } from '~/enums/requestStatus'
+import type { IProviderCompleteData } from '~/interfaces/IProvider'
+import { RequestStatus, getStatusConfig } from '~/enums/requestStatus'
 import requestClientApi from '~/services/requestClientApi'
+import providersApi from '~/services/providersApi'
+import requestsProviderApi from '~/services/requestsProviderApi'
 
 definePageMeta({ middleware: ['auth'] })
 
+const { user } = useAuth()
 const route = useRoute()
 const router = useRouter()
 const requestId = route.params.id as string
+
+const isProvider = computed(() => user.value?.role?.toLowerCase().includes('provider'))
+
+const provider = ref<IProviderCompleteData | null>(null)
+
+async function fetchProvider() {
+  if (!user.value || !isProvider.value) return
+  try {
+    provider.value = await providersApi.getProviderCompleteDataByUserId(user.value.id)
+  } catch (err) {
+    console.error('Error al cargar perfil de proveedor:', err)
+  }
+}
 
 const request = ref<IRequests | null>(null)
 const loading = ref(true)
@@ -21,6 +38,16 @@ async function fetchRequest() {
   } finally {
     loading.value = false
   }
+}
+
+const canAccept = computed(() =>
+  isProvider.value
+  && request.value?.status === RequestStatus.PENDING
+  && !!provider.value?.provider
+)
+
+function onAcceptError() {
+  navigateTo('/provider-home')
 }
 
 function formatDate(dateStr: string) {
@@ -45,7 +72,10 @@ function handleBack() {
   }
 }
 
-onMounted(fetchRequest)
+onMounted(async () => {
+  await fetchRequest()
+  fetchProvider()
+})
 </script>
 
 <template>
@@ -153,6 +183,14 @@ onMounted(fetchRequest)
           </span>
         </div>
       </div>
+
+      <!-- Accept swipe (provider only, pending requests) -->
+      <AcceptRequestSwipe
+        v-if="canAccept"
+        :request-id="requestId"
+        :provider-id="provider!.provider.id"
+        @error="onAcceptError"
+      />
 
       <!-- Details grid -->
       <div class="grid grid-cols-2 gap-3">

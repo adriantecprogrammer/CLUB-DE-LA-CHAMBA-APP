@@ -11,11 +11,11 @@ const requestsProviderApi = {
     return response.data
   },
 
-  async assignRequestToProvider(
+  async acceptRequest(
     providerId: string,
     requestId: string
   ): Promise<IRequestsProvider> {
-    const response = await axiosInstance.post(`/request/${requestId}/assign`, {
+    const response = await axiosInstance.put(`/request/${requestId}/accept`, {
       providerId: providerId
     })
     return response.data

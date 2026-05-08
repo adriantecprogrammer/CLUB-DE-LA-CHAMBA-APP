@@ -119,7 +119,8 @@ function getProviderInitials(providerId: string | null): string {
 // ── Nav ────────────────────────────────────────────────────────
 const activeTab = ref('solicitudes')
 watch(activeTab, (val) => {
-  if (val !== 'solicitudes') navigateTo('/home')
+  if (val === 'inicio') navigateTo('/home')
+  else if (val === 'perfil') navigateTo('/home?tab=perfil')
 })
 
 onMounted(fetchRequests)

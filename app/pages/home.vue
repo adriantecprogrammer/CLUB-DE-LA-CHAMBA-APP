@@ -11,7 +11,8 @@ definePageMeta({ middleware: ['auth', 'role'] })
 type ProviderWithUser = IProviders & { user: IUser | null }
 
 const { user, clearSession } = useAuth()
-const activeTab = ref('inicio')
+const route = useRoute()
+const activeTab = ref((route.query.tab as string) || 'inicio')
 
 const logout = async () => {
   clearSession()

@@ -1,8 +1,15 @@
 import axiosInstance from './axiosInstance'
-import type { IProviderCreate, IProviderCreateResponse, IProviders, IProviderCompleteData } from '~/interfaces/IProvider'
+import type {
+  IProviderCreate,
+  IProviderCreateResponse,
+  IProviders,
+  IProviderCompleteData
+} from '~/interfaces/IProvider'
 
 const providersApi = {
-  async createProvider(provider: IProviderCreate): Promise<IProviderCreateResponse> {
+  async createProvider(
+    provider: IProviderCreate
+  ): Promise<IProviderCreateResponse> {
     const response = await axiosInstance.post<IProviderCreateResponse>(
       '/providers/create',
       provider
@@ -15,8 +22,19 @@ const providersApi = {
     return response.data
   },
 
-  async getProviderCompleteDataByUserId(userId: string): Promise<IProviderCompleteData> {
-    const response = await axiosInstance.get<IProviderCompleteData>(`/providers/by-user/${userId}`)
+  async getProviderData(providerId: string): Promise<IProviderCompleteData> {
+    const response = await axiosInstance.get<IProviderCompleteData>(
+      `/providers/${providerId}`
+    )
+    return response.data
+  },
+
+  async getProviderCompleteDataByUserId(
+    userId: string
+  ): Promise<IProviderCompleteData> {
+    const response = await axiosInstance.get<IProviderCompleteData>(
+      `/providers/by-user/${userId}`
+    )
     return response.data
   }
 }

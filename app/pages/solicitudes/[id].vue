@@ -11,6 +11,7 @@ definePageMeta({ middleware: ['auth'] })
 const { user } = useAuth()
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const requestId = route.params.id as string
 
 const isProvider = computed(() => user.value?.role?.toLowerCase().includes('provider'))
@@ -46,8 +47,61 @@ const canAccept = computed(() =>
   && !!provider.value?.provider
 )
 
+const canStart = computed(() =>
+  isProvider.value
+  && request.value?.status === RequestStatus.ASSIGNED
+)
+
+const canComplete = computed(() =>
+  isProvider.value
+  && request.value?.status === RequestStatus.IN_PROGRESS
+)
+
+const canPay = computed(() =>
+  !isProvider.value
+  && request.value?.status === RequestStatus.COMPLETED
+  && !!request.value?.finalPrice
+  && request.value!.finalPrice! > 0
+  && !!request.value?.providerId
+)
+
 function onAcceptError() {
   navigateTo('/provider-home')
+}
+
+function onStarted() {
+  fetchRequest()
+}
+
+// --- Complete request ---
+const showCompleteModal = ref(false)
+const finalPriceInput = ref('')
+const completing = ref(false)
+
+function openCompleteModal() {
+  finalPriceInput.value = ''
+  showCompleteModal.value = true
+}
+
+function closeCompleteModal() {
+  showCompleteModal.value = false
+  finalPriceInput.value = ''
+}
+
+async function confirmComplete() {
+  if (!finalPriceInput.value) return
+  completing.value = true
+  try {
+    await requestsProviderApi.completeRequest(requestId, Number(finalPriceInput.value))
+    toast.add({ title: 'Solicitud completada', description: 'El cliente podrá realizar el pago', color: 'success' })
+    closeCompleteModal()
+    await fetchRequest()
+  } catch (err) {
+    console.error('Error al completar solicitud:', err)
+    toast.add({ title: 'Error', description: 'No se pudo completar la solicitud', color: 'error' })
+  } finally {
+    completing.value = false
+  }
 }
 
 function formatDate(dateStr: string) {
@@ -71,6 +125,15 @@ function handleBack() {
     navigateTo('/solicitudes')
   }
 }
+
+function goToPayment() {
+  if (!request.value?.providerId || !request.value?.finalPrice) return
+  navigateTo(`/payment/checkout?requestId=${requestId}&providerId=${request.value.providerId}&amount=${request.value.finalPrice}`)
+}
+
+const needsBottomPadding = computed(() =>
+  canPay.value || canComplete.value
+)
 
 onMounted(async () => {
   await fetchRequest()
@@ -110,7 +173,8 @@ onMounted(async () => {
     <!-- Content -->
     <div
       v-else-if="request"
-      class="flex flex-col gap-3 px-4 pt-2 pb-8"
+      class="flex flex-col gap-3 px-4 pt-2"
+      :class="needsBottomPadding ? 'pb-[140px]' : 'pb-8'"
     >
       <!-- Status + Title card -->
       <div class="bg-white border border-[#f1f5f9] rounded-xl p-[17px] flex flex-col gap-3 shadow-[0px_1px_1px_rgba(0,0,0,0.05)]">
@@ -184,12 +248,22 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- Accept swipe (provider only, pending requests) -->
+      <!-- Provider actions -->
+      <!-- Accept swipe (PENDING) -->
       <AcceptRequestSwipe
         v-if="canAccept"
         :request-id="requestId"
         :provider-id="provider!.provider.id"
+        @accepted="fetchRequest"
         @error="onAcceptError"
+      />
+
+      <!-- Start swipe (ASSIGNED) -->
+      <StartRequestSwipe
+        v-if="canStart"
+        :request-id="requestId"
+        @started="onStarted"
+        @error="onStarted"
       />
 
       <!-- Details grid -->
@@ -242,5 +316,104 @@ onMounted(async () => {
         No se encontró la solicitud
       </p>
     </div>
+
+    <!-- Fixed bottom: Pay button (client) or Complete button (provider) -->
+    <div
+      v-if="(canPay || canComplete) && request"
+      class="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-[#f1f5f9] pt-[17px] pb-8 px-4 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.05)]"
+    >
+      <!-- Client: Pay button -->
+      <button
+        v-if="canPay"
+        class="w-full h-12 bg-[#136dec] rounded-xl flex items-center justify-center gap-2 shadow-[0px_10px_15px_-3px_rgba(19,109,236,0.3),0px_4px_6px_-4px_rgba(19,109,236,0.3)] transition active:scale-[0.98]"
+        @click="goToPayment"
+      >
+        <UIcon
+          name="i-lucide-credit-card"
+          class="size-4 text-white"
+        />
+        <span class="text-[16px] font-bold text-white">
+          Pagar ${{ request.finalPrice }}
+        </span>
+      </button>
+
+      <!-- Provider: Complete button -->
+      <button
+        v-if="canComplete"
+        class="w-full h-12 bg-[#136dec] rounded-xl flex items-center justify-center gap-2 shadow-[0px_10px_15px_-3px_rgba(19,109,236,0.3),0px_4px_6px_-4px_rgba(19,109,236,0.3)] transition active:scale-[0.98]"
+        @click="openCompleteModal"
+      >
+        <UIcon
+          name="i-lucide-check-circle"
+          class="size-4 text-white"
+        />
+        <span class="text-[16px] font-bold text-white">
+          Completar Servicio
+        </span>
+      </button>
+    </div>
+
+    <!-- Complete request modal -->
+    <Teleport to="body">
+      <div
+        v-if="showCompleteModal"
+        class="fixed inset-0 z-50 flex items-end justify-center"
+      >
+        <div
+          class="absolute inset-0 bg-black/40"
+          @click="closeCompleteModal"
+        />
+        <div class="relative w-full max-w-lg bg-white rounded-t-2xl p-6 pb-10">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="text-[18px] font-bold text-[#0f172a]">
+              Completar Servicio
+            </h3>
+            <button
+              class="size-8 rounded-full bg-[#f1f5f9] flex items-center justify-center"
+              @click="closeCompleteModal"
+            >
+              <UIcon
+                name="i-lucide-x"
+                class="size-4 text-[#64748b]"
+              />
+            </button>
+          </div>
+
+          <p class="text-[14px] text-[#64748b] mb-4">
+            Ingresa el precio final del servicio realizado.
+          </p>
+
+          <div class="relative mb-5">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[16px] font-bold text-[#64748b]">$</span>
+            <input
+              v-model="finalPriceInput"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              placeholder="0.00"
+              class="w-full h-14 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl pl-9 pr-4 text-[22px] font-bold text-[#0f172a] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#136dec]/20 focus:border-[#136dec]"
+            >
+          </div>
+
+          <button
+            class="w-full h-12 bg-[#136dec] rounded-xl flex items-center justify-center gap-2 text-[16px] font-bold text-white shadow-[0px_10px_15px_-3px_rgba(19,109,236,0.3)] transition active:scale-[0.98] disabled:opacity-40"
+            :disabled="completing || !finalPriceInput || Number(finalPriceInput) <= 0"
+            @click="confirmComplete"
+          >
+            <div
+              v-if="completing"
+              class="size-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+            />
+            <template v-else>
+              <UIcon
+                name="i-lucide-check-circle"
+                class="size-4"
+              />
+              Completar Solicitud
+            </template>
+          </button>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

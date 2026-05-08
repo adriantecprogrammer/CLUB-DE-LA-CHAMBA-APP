@@ -9,27 +9,33 @@ const props = defineProps<{
 const emit = defineEmits<{
   accept: [requestId: string]
   view: [requestId: string]
+  complete: [requestId: string]
+  start: [requestId: string]
 }>()
 
 const offsetX = ref(0)
 const isDragging = ref(false)
 const didSwipe = ref(false)
-const isAccepted = ref(false)
+const isDone = ref(false)
 const startX = ref(0)
 const SWIPE_THRESHOLD = 120
 
-const canSwipe = computed(() => props.request.status === RequestStatus.PENDING)
+const canSwipeAccept = computed(() => props.request.status === RequestStatus.PENDING)
+const canSwipeStart = computed(() => props.request.status === RequestStatus.ASSIGNED)
+const canSwipe = computed(() => canSwipeAccept.value || canSwipeStart.value)
+
+const swipeColor = computed(() => canSwipeStart.value ? 'bg-[#136dec]' : 'bg-emerald-500')
 
 function onTouchStart(e: TouchEvent) {
   didSwipe.value = false
-  if (!canSwipe.value) return
+  if (!canSwipe.value || isDone.value) return
   isDragging.value = true
-  startX.value = e.touches[0].clientX - offsetX.value
+  startX.value = e.touches[0]!.clientX - offsetX.value
 }
 
 function onTouchMove(e: TouchEvent) {
   if (!isDragging.value || !canSwipe.value) return
-  const diff = e.touches[0].clientX - startX.value
+  const diff = e.touches[0]!.clientX - startX.value
   if (Math.abs(diff) > 10) didSwipe.value = true
   offsetX.value = Math.max(0, Math.min(diff, 180))
 }
@@ -37,23 +43,27 @@ function onTouchMove(e: TouchEvent) {
 function onTouchEnd() {
   isDragging.value = false
   if (offsetX.value > SWIPE_THRESHOLD) {
-    acceptRequest()
+    handleSwipe()
   } else {
     offsetX.value = 0
   }
 }
 
 function handleTap() {
-  if (!didSwipe.value && !isAccepted.value) {
+  if (!didSwipe.value && !isDone.value) {
     emit('view', props.request.id)
   }
 }
 
-async function acceptRequest() {
-  if (isAccepted.value) return
-  isAccepted.value = true
+async function handleSwipe() {
+  if (isDone.value) return
+  isDone.value = true
   offsetX.value = 180
-  emit('accept', props.request.id)
+  if (canSwipeAccept.value) {
+    emit('accept', props.request.id)
+  } else if (canSwipeStart.value) {
+    emit('start', props.request.id)
+  }
 }
 
 function statusLabel(status: string) {
@@ -86,31 +96,37 @@ function formatPrice(price: number) {
     class="relative overflow-hidden rounded-xl"
     @click="handleTap"
   >
-    <!-- Background accept action -->
+    <!-- Background swipe action -->
     <div
-      v-if="canSwipe && !isAccepted"
-      class="absolute inset-0 rounded-xl bg-emerald-500 flex items-center justify-end pr-5 z-0"
+      v-if="canSwipe && !isDone"
+      class="absolute inset-0 rounded-xl flex items-center justify-end pr-5 z-0"
+      :class="swipeColor"
     >
       <div class="flex items-center gap-2 text-white">
         <UIcon
-          name="i-lucide-check-circle"
+          :name="canSwipeStart ? 'i-lucide-play' : 'i-lucide-check-circle'"
           class="size-5"
         />
-        <span class="text-[14px] font-bold">Aceptar</span>
+        <span class="text-[14px] font-bold">
+          {{ canSwipeStart ? 'Iniciar' : 'Aceptar' }}
+        </span>
       </div>
     </div>
 
     <!-- Success overlay -->
     <div
-      v-if="isAccepted"
-      class="absolute inset-0 rounded-xl bg-emerald-500 flex items-center justify-center z-20"
+      v-if="isDone"
+      class="absolute inset-0 rounded-xl flex items-center justify-center z-20"
+      :class="swipeColor"
     >
       <div class="flex items-center gap-2 text-white">
         <UIcon
           name="i-lucide-check-circle"
           class="size-6"
         />
-        <span class="text-[16px] font-bold">Solicitud aceptada</span>
+        <span class="text-[16px] font-bold">
+          {{ canSwipeStart ? 'Servicio iniciado' : 'Solicitud aceptada' }}
+        </span>
       </div>
     </div>
 
@@ -118,22 +134,26 @@ function formatPrice(price: number) {
     <div
       class="relative z-10 bg-white border border-[#f3f4f6] rounded-xl p-4 transition-transform"
       :class="{ 'transition-none': isDragging }"
-      :style="canSwipe && !isAccepted ? { transform: `translateX(${offsetX}px)` } : {}"
+      :style="canSwipe && !isDone ? { transform: `translateX(${offsetX}px)` } : {}"
       @touchstart="onTouchStart"
       @touchmove.prevent="onTouchMove"
       @touchend="onTouchEnd"
     >
-      <!-- Swipe hint for pending -->
+      <!-- Swipe hint -->
       <div
-        v-if="canSwipe && !isAccepted"
+        v-if="canSwipe && !isDone"
         class="flex items-center gap-1 mb-2"
       >
         <UIcon
           name="i-lucide-arrow-right"
-          class="size-3 text-emerald-500"
+          class="size-3"
+          :class="canSwipeStart ? 'text-[#136dec]' : 'text-emerald-500'"
         />
-        <span class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider">
-          Desliza para aceptar
+        <span
+          class="text-[10px] font-semibold uppercase tracking-wider"
+          :class="canSwipeStart ? 'text-[#136dec]' : 'text-emerald-500'"
+        >
+          {{ canSwipeStart ? 'Desliza para iniciar' : 'Desliza para aceptar' }}
         </span>
       </div>
 
@@ -177,6 +197,23 @@ function formatPrice(price: number) {
         >
           {{ formatPrice(request.estimatedPrice) }}
         </span>
+      </div>
+
+      <!-- Complete button for IN_PROGRESS only -->
+      <div
+        v-if="request.status === RequestStatus.IN_PROGRESS"
+        class="mt-3 pt-3 border-t border-[#f3f4f6]"
+      >
+        <button
+          class="w-full h-10 bg-[#136dec] rounded-lg flex items-center justify-center gap-2 text-white text-[14px] font-bold transition active:scale-[0.98]"
+          @click.stop="emit('complete', request.id)"
+        >
+          <UIcon
+            name="i-lucide-check-circle"
+            class="size-4"
+          />
+          Completar servicio
+        </button>
       </div>
     </div>
   </div>

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { IRequests } from '~/interfaces/IRequests'
+import type { IProviderCompleteData } from '~/interfaces/IProvider'
 import { RequestStatus, getStatusConfig, ACTIVE_STATUSES, PAST_STATUSES } from '~/enums/requestStatus'
 import requestClientApi from '~/services/requestClientApi'
+import providersApi from '~/services/providersApi'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -11,6 +13,7 @@ const router = useRouter()
 const requests = ref<IRequests[]>([])
 const loading = ref(false)
 const activeFilter = ref<'activas' | 'pasadas'>('activas')
+const providersMap = ref<Record<string, IProviderCompleteData>>({})
 
 function goToDetail(id: string) {
   router.push(`/solicitudes/${id}`)
@@ -74,11 +77,43 @@ async function fetchRequests() {
   loading.value = true
   try {
     requests.value = await requestClientApi.getRequestByUserId(user.value.id)
+    await fetchProviders()
   } catch (err) {
     console.error('Error al cargar solicitudes:', err)
   } finally {
     loading.value = false
   }
+}
+
+async function fetchProviders() {
+  const providerIds = [...new Set(
+    requests.value
+      .map(r => r.providerId)
+      .filter((id): id is string => !!id && !providersMap.value[id])
+  )]
+  await Promise.all(
+    providerIds.map(async (id) => {
+      try {
+        providersMap.value[id] = await providersApi.getProviderData(id)
+      } catch (err) {
+        console.error('Error al cargar provider:', err)
+      }
+    })
+  )
+}
+
+function getProviderName(providerId: string | null): string {
+  if (!providerId) return ''
+  const p = providersMap.value[providerId]
+  if (!p) return 'Profesional'
+  return `${p.firstName} ${p.lastName}`
+}
+
+function getProviderInitials(providerId: string | null): string {
+  if (!providerId) return '?'
+  const p = providersMap.value[providerId]
+  if (!p) return '?'
+  return `${p.firstName?.charAt(0) ?? ''}${p.lastName?.charAt(0) ?? ''}`
 }
 
 // ── Nav ────────────────────────────────────────────────────────
@@ -271,25 +306,33 @@ onMounted(fetchRequests)
                   </p>
                 </template>
 
-                <!-- Provider assigned + in progress → Rastrear -->
-                <template v-else-if="req.status === RequestStatus.IN_PROGRESS && req.providerId">
+                <!-- Provider assigned → Rastrear -->
+                <template v-else-if="req.providerId && [RequestStatus.ASSIGNED, RequestStatus.IN_PROGRESS, RequestStatus.COMPLETED, RequestStatus.PAID].includes(req.status)">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                      <div class="size-8 rounded-full bg-[#f1f5f9] border border-[#e2e8f0] flex items-center justify-center shrink-0">
-                        <UIcon
-                          name="i-lucide-user"
-                          class="size-4 text-[#64748b]"
-                        />
+                      <div class="size-8 rounded-full bg-[#136dec]/10 border border-[#136dec]/20 flex items-center justify-center shrink-0">
+                        <span class="text-[11px] font-bold text-[#136dec]">
+                          {{ getProviderInitials(req.providerId) }}
+                        </span>
                       </div>
-                      <span class="text-[14px] font-medium text-[#0f172a]">Profesional</span>
+                      <div class="flex flex-col">
+                        <span class="text-[13px] font-semibold text-[#0f172a]">{{ getProviderName(req.providerId) }}</span>
+                        <div
+                          v-if="providersMap[req.providerId!]?.provider"
+                          class="flex items-center gap-1"
+                        >
+                          <UIcon
+                            name="i-lucide-star"
+                            class="size-3 text-yellow-500 fill-yellow-500"
+                          />
+                          <span class="text-[11px] text-[#64748b]">{{ providersMap[req.providerId!]?.provider?.ratingAvg?.toFixed(1) ?? '0.0' }}</span>
+                        </div>
+                      </div>
                     </div>
-                    <button class="bg-primary-600 text-white text-[12px] font-bold px-4 py-2 rounded-lg shadow-[0px_1px_1px_rgba(0,0,0,0.05)] transition active:scale-95">
-                      Rastrear
-                    </button>
                   </div>
                 </template>
 
-                <!-- Accepted or in_progress without provider → Asignando -->
+                <!-- No provider assigned → Asignando -->
                 <template v-else>
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">

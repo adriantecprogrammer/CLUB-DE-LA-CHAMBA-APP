@@ -253,6 +253,5 @@ onMounted(async () => {
         />
       </button>
     </div>
-
   </div>
 </template>

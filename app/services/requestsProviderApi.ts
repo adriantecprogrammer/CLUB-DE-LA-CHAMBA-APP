@@ -19,6 +19,21 @@ const requestsProviderApi = {
       providerId: providerId
     })
     return response.data
+  },
+
+  async startRequest(requestId: string): Promise<IRequestsProvider> {
+    const response = await axiosInstance.put(`/request/${requestId}/start`)
+    return response.data
+  },
+
+  async completeRequest(
+    requestId: string,
+    finalPrice: number
+  ): Promise<IRequestsProvider> {
+    const response = await axiosInstance.put(`/request/${requestId}/complete`, {
+      finalPrice
+    })
+    return response.data
   }
 }
 export default requestsProviderApi

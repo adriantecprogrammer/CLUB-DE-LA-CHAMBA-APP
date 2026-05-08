@@ -10,6 +10,7 @@ import reviewsProviderApi from '~/services/reviewsProviderApi'
 definePageMeta({ middleware: ['auth', 'role'] })
 
 const { user } = useAuth()
+const toast = useToast()
 const activeTab = ref('inicio')
 
 // --- Provider profile ---
@@ -74,6 +75,56 @@ async function acceptRequest(requestId: string) {
     await fetchRequests()
   } finally {
     acceptingId.value = null
+  }
+}
+
+// --- Start request ---
+const startingId = ref<string | null>(null)
+
+async function startRequest(requestId: string) {
+  if (startingId.value) return
+  startingId.value = requestId
+  try {
+    await requestsProviderApi.startRequest(requestId)
+    toast.add({ title: 'Servicio iniciado', description: 'El cliente será notificado', color: 'success' })
+    await fetchRequests()
+  } catch (err) {
+    console.error('Error al iniciar solicitud:', err)
+    toast.add({ title: 'Error', description: 'No se pudo iniciar la solicitud', color: 'error' })
+    await fetchRequests()
+  } finally {
+    startingId.value = null
+  }
+}
+
+// --- Complete request ---
+const completingId = ref<string | null>(null)
+const finalPriceInput = ref('')
+const completing = ref(false)
+
+function startCompleteFlow(requestId: string) {
+  completingId.value = requestId
+  finalPriceInput.value = ''
+}
+
+function cancelComplete() {
+  completingId.value = null
+  finalPriceInput.value = ''
+}
+
+async function confirmComplete() {
+  if (!completingId.value || !finalPriceInput.value) return
+  completing.value = true
+  try {
+    await requestsProviderApi.completeRequest(completingId.value, Number(finalPriceInput.value))
+    toast.add({ title: 'Solicitud completada', description: 'El cliente podrá realizar el pago', color: 'success' })
+    cancelComplete()
+    await fetchRequests()
+  } catch (err) {
+    console.error('Error al completar solicitud:', err)
+    toast.add({ title: 'Error', description: 'No se pudo completar la solicitud', color: 'error' })
+  } finally {
+    completing.value = false
   }
 }
 
@@ -447,7 +498,8 @@ onMounted(async () => {
                 { key: RequestStatus.PENDING, label: 'Pendientes' },
                 { key: RequestStatus.ASSIGNED, label: 'Asignadas' },
                 { key: RequestStatus.IN_PROGRESS, label: 'En progreso' },
-                { key: RequestStatus.COMPLETED, label: 'Completadas' }
+                { key: RequestStatus.COMPLETED, label: 'Completadas' },
+                { key: RequestStatus.PAID, label: 'Pagadas' }
               ]"
               :key="f.key"
               class="px-4 py-2 rounded-full text-[12px] font-semibold whitespace-nowrap transition shrink-0"
@@ -506,6 +558,8 @@ onMounted(async () => {
               :request="req"
               @accept="acceptRequest"
               @view="viewRequestDetail"
+              @start="startRequest"
+              @complete="startCompleteFlow"
             />
           </div>
         </section>
@@ -525,5 +579,68 @@ onMounted(async () => {
         @back="activeTab = 'inicio'"
       />
     </template>
+
+    <!-- Complete request modal -->
+    <Teleport to="body">
+      <div
+        v-if="completingId"
+        class="fixed inset-0 z-50 flex items-end justify-center"
+      >
+        <div
+          class="absolute inset-0 bg-black/40"
+          @click="cancelComplete"
+        />
+        <div class="relative w-full max-w-lg bg-white rounded-t-2xl p-6 pb-10">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="text-[18px] font-bold text-[#0f172a]">
+              Completar Servicio
+            </h3>
+            <button
+              class="size-8 rounded-full bg-[#f1f5f9] flex items-center justify-center"
+              @click="cancelComplete"
+            >
+              <UIcon
+                name="i-lucide-x"
+                class="size-4 text-[#64748b]"
+              />
+            </button>
+          </div>
+
+          <p class="text-[14px] text-[#64748b] mb-4">
+            Ingresa el precio final del servicio realizado.
+          </p>
+
+          <div class="relative mb-5">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[16px] font-bold text-[#64748b]">$</span>
+            <input
+              v-model="finalPriceInput"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              placeholder="0.00"
+              class="w-full h-14 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl pl-9 pr-4 text-[22px] font-bold text-[#0f172a] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#136dec]/20 focus:border-[#136dec]"
+            >
+          </div>
+
+          <button
+            class="w-full h-12 bg-[#136dec] rounded-xl flex items-center justify-center gap-2 text-[16px] font-bold text-white shadow-[0px_10px_15px_-3px_rgba(19,109,236,0.3)] transition active:scale-[0.98] disabled:opacity-40"
+            :disabled="completing || !finalPriceInput || Number(finalPriceInput) <= 0"
+            @click="confirmComplete"
+          >
+            <div
+              v-if="completing"
+              class="size-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+            />
+            <template v-else>
+              <UIcon
+                name="i-lucide-check-circle"
+                class="size-4"
+              />
+              Completar Solicitud
+            </template>
+          </button>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

@@ -20,15 +20,25 @@ const loading = ref(false)
 const startX = ref(0)
 const SWIPE_THRESHOLD = 200
 
+const priceInput = ref('')
+const priceConfirmed = ref(false)
+
+const numericPrice = computed(() => Number(priceInput.value) || 0)
+
+function confirmPrice() {
+  if (numericPrice.value <= 0) return
+  priceConfirmed.value = true
+}
+
 function onTouchStart(e: TouchEvent) {
   if (isAccepted.value || loading.value) return
   isDragging.value = true
-  startX.value = e.touches[0].clientX - offsetX.value
+  startX.value = e.touches[0]!.clientX - offsetX.value
 }
 
 function onTouchMove(e: TouchEvent) {
   if (!isDragging.value) return
-  const diff = e.touches[0].clientX - startX.value
+  const diff = e.touches[0]!.clientX - startX.value
   offsetX.value = Math.max(0, Math.min(diff, 300))
 }
 
@@ -63,8 +73,56 @@ async function acceptRequest() {
 </script>
 
 <template>
+  <!-- Success state -->
   <div
-    v-if="!isAccepted"
+    v-if="isAccepted"
+    class="bg-emerald-500 rounded-2xl px-5 py-4 flex items-center gap-3"
+  >
+    <UIcon
+      name="i-lucide-check-circle-2"
+      class="size-6 text-white"
+    />
+    <div>
+      <p class="text-[16px] font-bold text-white">
+        Solicitud aceptada
+      </p>
+      <p class="text-[13px] text-emerald-100">
+        El cliente será notificado
+      </p>
+    </div>
+  </div>
+
+  <!-- Step 1: Price input -->
+  <div
+    v-else-if="!priceConfirmed"
+    class="bg-white border border-[#f1f5f9] rounded-2xl p-5 shadow-[0px_1px_1px_rgba(0,0,0,0.05)]"
+  >
+    <h3 class="text-[14px] font-medium text-[#64748b] uppercase tracking-[0.6px] mb-4">
+      Precio Estimado
+    </h3>
+    <div class="relative mb-4">
+      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[16px] font-bold text-[#64748b]">$</span>
+      <input
+        v-model="priceInput"
+        type="number"
+        inputmode="numeric"
+        min="1"
+        placeholder="0.00"
+        class="w-full h-12 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl pl-9 pr-4 text-[18px] font-bold text-[#0f172a] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#136dec]/20 focus:border-[#136dec]"
+      >
+    </div>
+    <button
+      class="w-full h-11 bg-[#136dec] rounded-xl flex items-center justify-center text-[14px] font-bold text-white transition active:scale-[0.98] disabled:opacity-40"
+      :disabled="numericPrice <= 0"
+      @click="confirmPrice"
+    >
+      Confirmar Precio
+    </button>
+  </div>
+
+  <!-- Step 2: Swipe to accept -->
+  <div
+    v-else
     class="relative overflow-hidden rounded-2xl"
   >
     <!-- Track background -->
@@ -87,7 +145,6 @@ async function acceptRequest() {
       @touchmove.prevent="onTouchMove"
       @touchend="onTouchEnd"
     >
-      <!-- Thumb circle -->
       <div
         class="size-12 rounded-full flex items-center justify-center shrink-0"
         :class="offsetX > 50 ? 'bg-emerald-500' : 'bg-[#f1f5f9]'"
@@ -109,28 +166,14 @@ async function acceptRequest() {
         />
       </div>
 
-      <p class="ml-4 text-[14px] font-semibold text-[#475569]">
-        Desliza para aceptar esta solicitud
-      </p>
-    </div>
-  </div>
-
-  <!-- Success state -->
-  <div
-    v-else
-    class="bg-emerald-500 rounded-2xl px-5 py-4 flex items-center gap-3"
-  >
-    <UIcon
-      name="i-lucide-check-circle-2"
-      class="size-6 text-white"
-    />
-    <div>
-      <p class="text-[16px] font-bold text-white">
-        Solicitud aceptada
-      </p>
-      <p class="text-[13px] text-emerald-100">
-        El cliente será notificado
-      </p>
+      <div class="ml-4 flex-1">
+        <p class="text-[14px] font-semibold text-[#475569]">
+          Desliza para aceptar
+        </p>
+        <p class="text-[13px] text-[#136dec] font-bold">
+          ${{ numericPrice }} MXN
+        </p>
+      </div>
     </div>
   </div>
 </template>

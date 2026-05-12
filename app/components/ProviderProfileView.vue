@@ -328,21 +328,6 @@ onMounted(async () => {
             :class="idx < reviews.slice(0, 4).length - 1 ? 'border-b border-[#f1f5f9] pb-4 mb-4' : 'pb-6'"
           >
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="size-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
-                  <span class="text-[14px] font-bold text-primary-600">
-                    {{ String.fromCharCode(65 + idx) }}
-                  </span>
-                </div>
-                <div>
-                  <p class="text-[14px] font-bold text-[#0f172a]">
-                    Cliente
-                  </p>
-                  <p class="text-[12px] text-[#64748b]">
-                    {{ formatRelative(review.createdAt) }}
-                  </p>
-                </div>
-              </div>
               <div class="flex items-center gap-0.5">
                 <UIcon
                   v-for="star in 5"
@@ -352,6 +337,9 @@ onMounted(async () => {
                   :class="star <= review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-neutral-300'"
                 />
               </div>
+              <p class="text-[12px] text-[#64748b]">
+                {{ formatRelative(review.createdAt) }}
+              </p>
             </div>
             <p class="text-[14px] text-[#475569] leading-[20px]">
               {{ review.comment }}

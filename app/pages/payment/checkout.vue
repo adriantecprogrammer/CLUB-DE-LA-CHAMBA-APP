@@ -55,7 +55,7 @@ async function handlePay() {
 
 function handleBack() {
   if (paymentComplete.value) {
-    router.push(`/solicitudes/${requestId}`)
+    router.push('/solicitudes')
   } else {
     router.back()
   }
@@ -141,9 +141,9 @@ function handleBack() {
         </p>
         <button
           class="mt-2 w-full h-12 bg-[#136dec] rounded-xl flex items-center justify-center text-[16px] font-bold text-white"
-          @click="router.push(`/solicitudes/${requestId}`)"
+          @click="router.push('/solicitudes')"
         >
-          Volver al Inicio
+          Volver a Mis Solicitudes
         </button>
       </div>
     </div>

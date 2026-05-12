@@ -5,6 +5,7 @@ import { RequestStatus, getStatusConfig } from '~/enums/requestStatus'
 import requestClientApi from '~/services/requestClientApi'
 import providersApi from '~/services/providersApi'
 import requestsProviderApi from '~/services/requestsProviderApi'
+import reviewsUserApi from '~/services/reviewsUser'
 
 definePageMeta({ middleware: ['auth'] })
 
@@ -131,8 +132,57 @@ function goToPayment() {
   navigateTo(`/payment/checkout?requestId=${requestId}&providerId=${request.value.providerId}&amount=${request.value.finalPrice}`)
 }
 
+const canReview = computed(() =>
+  !isProvider.value
+  && (request.value?.status === RequestStatus.COMPLETED || request.value?.status === RequestStatus.PAID)
+  && !!request.value?.providerId
+)
+
+// --- Review ---
+const showReviewModal = ref(false)
+const reviewRating = ref(0)
+const reviewComment = ref('')
+const submittingReview = ref(false)
+const reviewSubmitted = ref(false)
+
+const REVIEW_LABELS = ['', 'Malo', 'Regular', 'Bueno', 'Muy bueno', 'Excelente']
+
+function openReviewModal() {
+  reviewRating.value = 0
+  reviewComment.value = ''
+  showReviewModal.value = true
+}
+
+function closeReviewModal() {
+  showReviewModal.value = false
+}
+
+async function submitReview() {
+  if (!request.value || !user.value || reviewRating.value === 0) return
+  submittingReview.value = true
+  try {
+    await reviewsUserApi.createReview({
+      requestId: request.value.id,
+      clientId: user.value.id,
+      providerId: request.value.providerId!,
+      rating: reviewRating.value,
+      comment: reviewComment.value
+    })
+    toast.add({ title: 'Reseña enviada', description: 'Gracias por calificar el servicio', color: 'success' })
+    reviewSubmitted.value = true
+    closeReviewModal()
+  } catch (err) {
+    console.error('Error al enviar reseña:', err)
+    toast.add({ title: 'Error', description: 'No se pudo enviar la reseña', color: 'error' })
+  } finally {
+    submittingReview.value = false
+  }
+}
+
+const showReviewButton = computed(() => canReview.value && !reviewSubmitted.value)
+
 const needsBottomPadding = computed(() =>
-  canPay.value || canComplete.value
+  canPay.value || canComplete.value || showReviewButton.value
 )
 
 onMounted(async () => {
@@ -319,8 +369,8 @@ onMounted(async () => {
 
     <!-- Fixed bottom: Pay button (client) or Complete button (provider) -->
     <div
-      v-if="(canPay || canComplete) && request"
-      class="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-[#f1f5f9] pt-[17px] pb-8 px-4 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.05)]"
+      v-if="(canPay || canComplete || showReviewButton) && request"
+      class="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-[#f1f5f9] pt-[17px] pb-8 px-4 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.05)] flex flex-col gap-3"
     >
       <!-- Client: Pay button -->
       <button
@@ -351,7 +401,108 @@ onMounted(async () => {
           Completar Servicio
         </span>
       </button>
+
+      <!-- Client: Review button -->
+      <button
+        v-if="showReviewButton"
+        class="w-full h-12 bg-[#f59e0b] rounded-xl flex items-center justify-center gap-2 shadow-[0px_10px_15px_-3px_rgba(245,158,11,0.3),0px_4px_6px_-4px_rgba(245,158,11,0.3)] transition active:scale-[0.98]"
+        @click="openReviewModal"
+      >
+        <UIcon
+          name="i-lucide-star"
+          class="size-4 text-white"
+        />
+        <span class="text-[16px] font-bold text-white">
+          Calificar Servicio
+        </span>
+      </button>
     </div>
+
+    <!-- Review modal -->
+    <Teleport to="body">
+      <div
+        v-if="showReviewModal"
+        class="fixed inset-0 z-50 flex items-end justify-center"
+      >
+        <div
+          class="absolute inset-0 bg-black/40"
+          @click="closeReviewModal"
+        />
+        <div class="relative w-full max-w-lg bg-white rounded-t-2xl p-6 pb-10">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="text-[18px] font-bold text-[#0f172a]">
+              Calificar Servicio
+            </h3>
+            <button
+              class="size-8 rounded-full bg-[#f1f5f9] flex items-center justify-center"
+              @click="closeReviewModal"
+            >
+              <UIcon
+                name="i-lucide-x"
+                class="size-4 text-[#64748b]"
+              />
+            </button>
+          </div>
+
+          <p class="text-[14px] text-[#64748b] mb-5">
+            ¿Cómo fue tu experiencia con este profesional?
+          </p>
+
+          <!-- Star selector -->
+          <div class="flex items-center justify-center gap-3 mb-2">
+            <button
+              v-for="star in 5"
+              :key="star"
+              class="size-12 flex items-center justify-center rounded-full transition"
+              :class="star <= reviewRating ? 'bg-yellow-50' : 'bg-transparent'"
+              @click="reviewRating = star"
+            >
+              <UIcon
+                name="i-lucide-star"
+                class="size-8 transition"
+                :class="star <= reviewRating ? 'text-yellow-400 fill-yellow-400' : 'text-neutral-200'"
+              />
+            </button>
+          </div>
+          <p
+            v-if="reviewRating > 0"
+            class="text-center text-[14px] font-semibold text-[#0f172a] mb-5"
+          >
+            {{ REVIEW_LABELS[reviewRating] }}
+          </p>
+          <div
+            v-else
+            class="mb-5"
+          />
+
+          <!-- Comment -->
+          <textarea
+            v-model="reviewComment"
+            placeholder="Escribe un comentario (opcional)..."
+            rows="3"
+            class="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-4 py-3 text-[14px] text-[#0f172a] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#f59e0b]/20 focus:border-[#f59e0b] resize-none"
+          />
+
+          <button
+            class="w-full h-12 bg-[#f59e0b] rounded-xl flex items-center justify-center gap-2 text-[16px] font-bold text-white shadow-[0px_10px_15px_-3px_rgba(245,158,11,0.3)] transition active:scale-[0.98] disabled:opacity-40 mt-5"
+            :disabled="submittingReview || reviewRating === 0"
+            @click="submitReview"
+          >
+            <div
+              v-if="submittingReview"
+              class="size-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+            />
+            <template v-else>
+              <UIcon
+                name="i-lucide-send"
+                class="size-4"
+              />
+              Enviar Reseña
+            </template>
+          </button>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Complete request modal -->
     <Teleport to="body">
